@@ -1,8 +1,8 @@
 // vtt loader
-function loadVtt(vttStr) {
+function loadVtt(vttStr: string) {
     const rx = /^([\d:.]*) --> ([\d:.]*)\s?(.*?)\s*$/;
     const lines = vttStr.replace(/\r?\n/g, '\n').split('\n');
-    let data = [], lineBuf = [], record = null;
+    let data = [], lineBuf = [], record: Record<string, any>|null = null;
     // check  lines
     for (let l of lines) {
         let m = l.match(rx);
@@ -17,7 +17,7 @@ function loadVtt(vttStr) {
             record = {
                 time_start: m[1],
                 time_end: m[2],
-                ext_param: m[3].split(' ').map(x => x.split(':')).reduce((p, c) => (p[c[0]] = c[1]) && p, {}),
+                ext_param: m[3].split(' ').map(x => x.split(':')).reduce((p, c) => ((p as Record<string, any>)[c[0]] = c[1]) && p, {}),
             };
             lineBuf = [];
             continue;
@@ -35,7 +35,7 @@ function loadVtt(vttStr) {
 }
 
 // ass specific
-function convertToAss(vttStr, lang, fontSize){
+function convertToAss(vttStr: string, lang:string, fontSize:number){
     let ass = [
         '\ufeff[Script Info]',
         `Title: ${lang}`,
@@ -58,14 +58,14 @@ function convertToAss(vttStr, lang, fontSize){
     
     let vttData = loadVtt(vttStr);
     for (let l of vttData) {
-        l = convertToAssLine(l, 'Main');
-        ass = ass.concat(l);
+        let p = convertToAssLine(l, 'Main');
+        ass = ass.concat(p);
     }
     
     return ass.join('\r\n') + '\r\n';
 }
 
-function convertToAssLine(l, style) {
+function convertToAssLine(l: Record<string, any>, style: string) {
     let start = convertTime(l.time_start);
     let end = convertTime(l.time_end);
     let text = convertToAssText(l.text);
@@ -82,7 +82,7 @@ function convertToAssLine(l, style) {
     return  `Dialogue: 0,${start},${end},${style},,0,0,0,,${text}`;
 }
 
-function convertToAssText(text) {
+function convertToAssText(text: string) {
     text = text
         .replace(/\r/g, '')
         .replace(/\n/g, '\\N')
@@ -102,20 +102,20 @@ function convertToAssText(text) {
 }
 
 // srt specific
-function convertToSrt(vttStr){
-    let srt = [], srtLineIdx = 0;
+function convertToSrt(vttStr: string){
+    let srt: any[] = [], srtLineIdx = 0;
     
     let vttData = loadVtt(vttStr);
     for (let l of vttData) {
         srtLineIdx++;
-        l = convertToSrtLine(l, srtLineIdx);
-        srt = srt.concat(l);
+        let p = convertToSrtLine(l, srtLineIdx);
+        srt = srt.concat(p);
     }
     
     return srt.join('\r\n') + '\r\n';
 }
 
-function convertToSrtLine(l, idx) {
+function convertToSrtLine(l: Record<string, any>, idx: number) {
     let bom = idx == 1 ? '\ufeff' : '';
     let start = convertTime(l.time_start, true);
     let end = convertTime(l.time_end, true);
@@ -124,7 +124,7 @@ function convertToSrtLine(l, idx) {
 }
 
 // time parser
-function convertTime(time, srtFormat) {
+function convertTime(time: string, srtFormat = false) {
     let mTime = time.match(/([\d:]*)\.?(\d*)/);
     if (!mTime){
         return srtFormat ? '00:00:00,000' : '0:00:00.00';
@@ -132,16 +132,16 @@ function convertTime(time, srtFormat) {
     return toSubsTime(mTime[0], srtFormat);
 }
 
-function toSubsTime(str, srtFormat) {
+function toSubsTime(str: string, srtFormat: boolean) {
     
-    let n = [], x, sx;
+    let n = [], x: (number|string)[], sx: string|number|string[];
     x = str.split(/[:.]/).map(x => Number(x));
     
     let msLen = srtFormat ? 3 : 2;
     let hLen = srtFormat ? 2 : 1;
     
     x[3] = '0.' + ('' + x[3]).padStart(3, '0');
-    sx = x[0]*60*60 + x[1]*60 + x[2] + Number(x[3]);
+    sx = (x[0] as number)*60*60 + (x[1] as number)*60 + (x[2] as number) + Number(x[3]);
     sx = sx.toFixed(msLen).split('.');
     
     
@@ -155,12 +155,12 @@ function toSubsTime(str, srtFormat) {
     return n.join('');
 }
 
-function padTimeNum(sep, input, pad){
+function padTimeNum(sep: string, input: number|string, pad: number){
     return sep + ('' + input).padStart(pad, '0');
 }
 
 // export module
-module.exports = (vttStr, toSrt, lang = 'English', fontSize) => {
+export default (vttStr: string, toSrt: boolean, lang = 'English', fontSize: number) => {
     const convert = toSrt ? convertToSrt : convertToAss;
     return convert(vttStr, lang, fontSize);
 };

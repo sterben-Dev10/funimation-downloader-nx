@@ -1,9 +1,8 @@
-const FormData = require('form-data');
-const got = require('got');
+import got, { Options, Headers, Response } from 'got';
 
 // do req
-const getData = async (options) => {
-    let gOptions = { 
+const getData = async (options: Record<string, any>) => {
+    let gOptions: Options = { 
         url: options.url, 
         headers: {
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:70.0) Gecko/20100101 Firefox/70.0',
@@ -14,22 +13,23 @@ const getData = async (options) => {
     }
     if(options.baseUrl){
         gOptions.prefixUrl = options.baseUrl;
-        gOptions.url = gOptions.url.replace(/^\//,'');
+        gOptions.url = (gOptions.url?.toString() || '').replace(/^\//,'');
     }
     if(options.querystring){
         gOptions.url += `?${new URLSearchParams(options.querystring).toString()}`;
     }
     if(options.auth){
         gOptions.method = 'POST';
-        gOptions.body = new FormData();
-        gOptions.body.append('username', options.auth.user);
-        gOptions.body.append('password', options.auth.pass);
+        const data = new FormData();
+        data.append('username', options.auth.user);
+        data.append('password', options.auth.pass);
+        gOptions.form = data;
     }
     if(options.useToken && options.token){
-        gOptions.headers.Authorization = `Token ${options.token}`;
+        (gOptions.headers as Headers).Authorization = `Token ${options.token}`;
     }
     if(options.dinstid){
-        gOptions.headers.devicetype = 'Android Phone';
+        (gOptions.headers as Headers).devicetype = 'Android Phone';
     }
     // debug
     gOptions.hooks = {
@@ -43,8 +43,8 @@ const getData = async (options) => {
         ]
     };
     try {
-        let res = await got(gOptions);
-        if(res.body && (options.responseType !== 'buffer' && res.body.match(/^</))){
+        let res = await got(gOptions) as Response;
+        if(res.body && (options.responseType !== 'buffer' && (res.body as string).match(/^</))){
             throw { name: 'HTMLError', res };
         }
         return {
@@ -73,4 +73,4 @@ const getData = async (options) => {
     }
 };
 
-module.exports = getData;
+export default getData

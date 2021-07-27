@@ -9,7 +9,7 @@ mkvmerge
 token.yml
 *.exe
 *.dll
-*.ts
+*.js
 *.mkv
 *.mp4
 *.ass

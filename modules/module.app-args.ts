@@ -1,4 +1,4 @@
-const yargs = require('yargs');
+import * as yargs from 'yargs';
 
 const availableFilenameVars = [
     'title',
@@ -12,9 +12,9 @@ const availableFilenameVars = [
 const subLang = ['enUS', 'esLA', 'ptBR'];
 const dubLang = ['enUS', 'esLA', 'ptBR', 'zhMN', 'jaJP'];
 
-const appArgv = (cfg) => {
+const appArgv = (cfg: Record<string, unknown>) => {
     // init
-    const parseDefault = (key, _default) => {
+    const parseDefault = (key: string, _default: unknown) => {
         if (Object.prototype.hasOwnProperty.call(cfg, key)) {
             return cfg[key];
         } else
@@ -216,15 +216,16 @@ const appArgv = (cfg) => {
         ])
 
         // --
-        .argv;
+        .parseSync();
     // Resolve unwanted arrays
     if (argv.allDubs)
         argv.dub = dubLang;
     if (argv.allSubs)
         argv.subLang = subLang;
     for (let key in argv) {
-        if (argv[key] instanceof Array && !(key === 'subLang' || key === 'dub')) {
-            argv[key] = argv[key].pop();
+        let item = argv[key]
+        if (item instanceof Array && !(key === 'subLang' || key === 'dub')) {
+            argv[key] = item.pop();
         }
     }
     return argv;
@@ -232,8 +233,4 @@ const appArgv = (cfg) => {
 
 const showHelp = yargs.showHelp;
 
-module.exports = {
-    appArgv,
-    showHelp,
-    availableFilenameVars
-};
+export { appArgv, showHelp, availableFilenameVars }

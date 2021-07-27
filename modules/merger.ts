@@ -1,14 +1,8 @@
 const iso639 = require('iso-639');
 
-/**
- * @param {Array<object>} videoAndAudio 
- * @param {Array<object>} onlyVid 
- * @param {Array<object>} onlyAudio
- * @param {Array<object>} subtitles 
- * @param {string} output
- * @returns {string}
- */
-const buildCommandFFmpeg = (videoAndAudio, onlyVid, onlyAudio, subtitles, output) => {
+
+const buildCommandFFmpeg = (videoAndAudio: Record<string, any>[], onlyVid: Record<string, any>[], onlyAudio: Record<string, any>[],
+    subtitles: Record<string, any>[], output:string): string => {
     let args = [];
     let metaData = [];
 
@@ -57,19 +51,14 @@ const buildCommandFFmpeg = (videoAndAudio, onlyVid, onlyAudio, subtitles, output
         '-c:v copy',
         '-c:a copy'
     );
-    args.push(output.split('.').pop().toLowerCase() === 'mp4' ? '-c:s mov_text' : '-c:s ass');
+    args.push((output.split('.').pop() || '').toLowerCase() === 'mp4' ? '-c:s mov_text' : '-c:s ass');
     args.push(...subtitles.map((sub, index) => `-metadata:s:${index + 2} language=${getLanguageCode(sub.language)}`));
     args.push(`"${output}"`);
     return args.join(' ');
 };
 
-/**
- * @param {string} videoFile 
- * @param {object} audioFile 
- * @param {Array<object>} subtitles 
- * @returns {string}
- */
-const buildCommandMkvMerge = (videoAndAudio, onlyVid, onlyAudio, subtitles, output) => {
+const buildCommandMkvMerge = (videoAndAudio: Record<string, any>[], onlyVid: Record<string, any>[], onlyAudio: Record<string, any>[],
+    subtitles: Record<string, any>[], output:string): string  => {
     let args = [];
 
     let hasVideo = false;
@@ -143,13 +132,13 @@ const buildCommandMkvMerge = (videoAndAudio, onlyVid, onlyAudio, subtitles, outp
 
     return args.join(' ');
 };
-const subDict = {
+const subDict: Record<string, string> = {
     'en': 'English (United State)',
     'es': 'Español (Latinoamericano)',
     'pt': 'Português (Brasil)',
     'ja': '日本語'
 };
-const getLanguageCode = (from, _default = 'eng') => {
+const getLanguageCode = (from: string, _default = 'eng') => {
     for (let lang in iso639.iso_639_2) {
         let langObj = iso639.iso_639_2[lang];
         if (Object.prototype.hasOwnProperty.call(langObj, '639-1') && langObj['639-1'] === from) {
@@ -159,8 +148,4 @@ const getLanguageCode = (from, _default = 'eng') => {
     return _default;
 };
 
-module.exports = {
-    buildCommandFFmpeg,
-    getLanguageCode,
-    buildCommandMkvMerge
-};
+export { buildCommandFFmpeg, buildCommandMkvMerge, getLanguageCode }

@@ -1,12 +1,12 @@
-const yaml = require('yaml');
-const fs = require('fs');
+import * as yaml from 'yaml';
+import * as fs from 'fs';
 const existsFile = fs.existsSync;
 
-const loadYamlFile = (file) => {
+const loadYamlFile = (file: fs.PathLike) => {
     return yaml.parse(fs.readFileSync(file, 'utf8'));
 };
 
-const loadYamlCfg = (file) => {
+const loadYamlCfg = (file: fs.PathLike) => {
     if(existsFile(`${file}.user.yml`)){
         file += '.user';
     }
@@ -14,7 +14,7 @@ const loadYamlCfg = (file) => {
     if(fs.existsSync(file)){
         
         try{
-            return loadYamlFile(file, 'utf8');
+            return loadYamlFile(file);
         }
         catch(e){
             return {};
@@ -23,4 +23,4 @@ const loadYamlCfg = (file) => {
     return {};
 };
 
-module.exports = loadYamlCfg;
+export default loadYamlCfg
