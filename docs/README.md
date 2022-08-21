@@ -2,7 +2,7 @@
 
 Funimation Downloader NX is capable of downloading videos from the *Funimation* streaming service.
 
-Fork of @seiya-dev's Funimation Downloader NX
+Fork of @seiya-dev's (@izu-co) Funimation Downloader NX
 
 ## Legal Warning
 
